@@ -1,61 +1,297 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Game Hub</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>GameHub — Upload & Play (Starter)</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#6ee7b7;--muted:#9aa4b2;--glass:rgba(255,255,255,0.03)}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:#e6eef6;background:linear-gradient(180deg,#071422 0%, #071827 60%);min-height:100vh}
+    header{padding:28px 20px;display:flex;align-items:center;gap:16px}
+    .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#60a5fa);display:flex;align-items:center;justify-content:center;font-weight:700;color:#002;box-shadow:0 6px 18px rgba(2,6,23,.5)}
+    h1{margin:0;font-size:20px}
+    .wrap{max-width:1100px;margin:18px auto;padding:18px}
+    .grid{display:grid;grid-template-columns:360px 1fr;gap:18px}
+    .card{background:var(--card);border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,0.03);box-shadow:inset 0 1px 0 rgba(255,255,255,0.02)}
+
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input[type=text],select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    textarea{min-height:78px}
+    .btn{display:inline-block;padding:10px 12px;border-radius:10px;background:linear-gradient(90deg,var(--accent),#60a5fa);color:#002;font-weight:700;border:none;cursor:pointer}
+    .muted{color:var(--muted);font-size:13px}
+    .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+    .game-card{background:var(--glass);padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,0.02);display:flex;flex-direction:column;gap:8px}
+    .thumb{height:110px;border-radius:8px;background:#08121b;display:flex;align-items:center;justify-content:center;color:var(--muted);overflow:hidden}
+    .meta{display:flex;justify-content:space-between;align-items:center}
+    .meta h3{margin:0;font-size:14px}
+    .meta small{color:var(--muted)}
+
+    main .player{height:520px;background:#071a27;border-radius:12px;padding:10px}
+    iframe{width:100%;height:100%;border:0;border-radius:8px;background:#fff}
+    .controls{display:flex;gap:8px;flex-wrap:wrap}
+    footer{padding:28px;text-align:center;color:var(--muted)}
+
+    @media (max-width:900px){.grid{grid-template-columns:1fr}.card{padding:12px}}
+  </style>
 </head>
 <body>
-
   <header>
-    <h1>🎮 Student Game Hub</h1>
-    <p>Create, Upload, and Play Games!</p>
+    <div class="logo">GH</div>
+    <div>
+      <h1>GameHub — Upload & Play (Starter)</h1>
+      <div class="muted">Supports HTML games, Scratch embeds (TurboWarp), and client-side Python via Pyodide</div>
+    </div>
   </header>
 
-  <!-- Upload Section -->
-  <section id="upload-section">
-    <h2>Upload or Share Your Game</h2>
-    <form id="game-form">
-      <input type="text" id="game-title" placeholder="Game Title" required>
-      <input type="url" id="game-link" placeholder="Game Link (Replit, Scratch, HTML page)" required>
-      <textarea id="game-desc" placeholder="Short Description"></textarea>
-      <button type="submit">Add Game</button>
-    </form>
-  </section>
+  <div class="wrap">
+    <div class="grid">
+      <section class="card">
+        <h2 style="margin-top:2px">Upload a game</h2>
+        <p class="muted">Choose type, provide a name & thumbnail. Uploaded files are stored in your browser (local demo). For public hosting, push files to your GitHub repo or submit a PR.</p>
 
-  <!-- Games Display -->
-  <section id="games-section">
-    <h2>Student Games</h2>
-    <div id="games-container"></div>
-  </section>
+        <label>Type</label>
+        <select id="type">
+          <option value="html">HTML / JS (single index.html)</option>
+          <option value="scratch">Scratch (TurboWarp project)</option>
+          <option value="python">Python (runs with Pyodide)</option>
+        </select>
 
-  <footer>
-    <p>Made by Students – Hosted on GitHub Pages</p>
-  </footer>
+        <label>Game name</label>
+        <input id="name" type="text" placeholder="Cool Jump" />
 
-  <!-- Firebase core -->
-  <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-analytics.js"></script>
+        <label>Short description</label>
+        <textarea id="desc" placeholder="What is the game about?"></textarea>
+
+        <label>Thumbnail (optional)</label>
+        <input id="thumb" type="file" accept="image/*" />
+
+        <div id="html-upload" style="margin-top:8px">
+          <label>HTML file (index.html)</label>
+          <input id="htmlfile" type="file" accept="text/html" />
+          <div class="muted">Or provide a direct URL to an index.html</div>
+          <input id="htmlurl" type="text" placeholder="https://example.com/game/index.html" style="margin-top:8px" />
+        </div>
+
+        <div id="scratch-upload" style="display:none;margin-top:8px">
+          <label>Scratch project URL or ID</label>
+          <input id="scratchid" type="text" placeholder="https://scratch.mit.edu/projects/123456789 or 123456789" />
+        </div>
+
+        <div id="python-upload" style="display:none;margin-top:8px">
+          <label>Python file (.py) or paste code</label>
+          <input id="pyfile" type="file" accept="text/x-python,text/plain" />
+          <textarea id="pycode" placeholder="# paste Python code here (prints to stdout)"></textarea>
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+          <button class="btn" id="addBtn">Add to library</button>
+          <button id="clearBtn" style="background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:8px">Clear local library</button>
+        </div>
+
+        <hr style="margin:12px 0;border:none;height:1px;background:rgba(255,255,255,0.02)" />
+        <div class="muted">Developer notes:</div>
+        <ul class="muted" style="padding-left:18px;margin:6px 0">
+          <li>GitHub Pages hosts static files—use PRs to add public games.</li>
+          <li>Scratch runs via TurboWarp embed.</li>
+          <li>Python runs in-browser using Pyodide (downloads runtime when first used).</li>
+        </ul>
+      </section>
+
+      <main>
+        <section class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h2 style="margin:0">Library</h2>
+            <div class="controls">
+              <button id="refreshBtn" class="btn" style="padding:8px 10px">Refresh</button>
+            </div>
+          </div>
+
+          <div style="margin-top:12px">
+            <div class="gallery" id="gallery"></div>
+          </div>
+        </section>
+
+        <section class="card" style="margin-top:12px">
+          <h2 style="margin:0">Player</h2>
+          <div class="player" id="player">
+            <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);">Select a game from the library to play</div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <footer class="muted">This is a starter template. To publish publicly, add content to your GitHub repo and enable GitHub Pages (set index.html at repo root).</footer>
+  </div>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBN7suT93o2D3LS_yhq6hO5P0_C6Q-qVmY",
-      authDomain: "student-games-1da81.firebaseapp.com",
-      projectId: "student-games-1da81",
-      storageBucket: "student-games-1da81.firebasestorage.app",
-      messagingSenderId: "85852942448",
-      appId: "1:85852942448:web:15ffc65ab4cfdc6b0ec4b5",
-      measurementId: "G-1PESQZG8NN"
-    };
+    // Simple client-side library stored in localStorage
+    const typeEl = document.getElementById('type');
+    const htmlUpload = document.getElementById('html-upload');
+    const scratchUpload = document.getElementById('scratch-upload');
+    const pythonUpload = document.getElementById('python-upload');
+    const addBtn = document.getElementById('addBtn');
+    const gallery = document.getElementById('gallery');
+    const player = document.getElementById('player');
+    const clearBtn = document.getElementById('clearBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const analytics = firebase.analytics();
+    function showSections(){
+      const t = typeEl.value;
+      htmlUpload.style.display = t==='html'? 'block':'none';
+      scratchUpload.style.display = t==='scratch'? 'block':'none';
+      pythonUpload.style.display = t==='python'? 'block':'none';
+    }
+    typeEl.addEventListener('change', showSections);
+
+    function loadLibrary(){
+      const raw = localStorage.getItem('gamehub_lib');
+      return raw? JSON.parse(raw) : [];
+    }
+    function saveLibrary(list){ localStorage.setItem('gamehub_lib', JSON.stringify(list)); }
+
+    function renderGallery(){
+      const list = loadLibrary();
+      gallery.innerHTML='';
+      if(!list.length){ gallery.innerHTML='<div class="muted">No games yet — add one from the left panel.</div>'; return }
+      list.forEach((g, idx)=>{
+        const el = document.createElement('div'); el.className='game-card';
+        const thumb = document.createElement('div'); thumb.className='thumb';
+        if(g.thumb){ const img = document.createElement('img'); img.src = g.thumb; img.style.width='100%'; img.style.height='100%'; img.style.objectFit='cover'; thumb.innerHTML=''; thumb.appendChild(img);} else { thumb.textContent=g.type.toUpperCase() }
+        const meta = document.createElement('div'); meta.className='meta';
+        const title = document.createElement('h3'); title.textContent = g.name || 'Untitled';
+        const small = document.createElement('small'); small.textContent = g.type + ' • ' + (new Date(g.added).toLocaleString());
+        meta.appendChild(title); meta.appendChild(small);
+        const desc = document.createElement('div'); desc.className='muted'; desc.textContent = g.desc || '';
+        const playBtn = document.createElement('button'); playBtn.className='btn'; playBtn.style.fontSize='13px'; playBtn.textContent='Play';
+        playBtn.addEventListener('click', ()=> loadToPlayer(g));
+        const del = document.createElement('button'); del.textContent='Delete'; del.style.marginLeft='8px'; del.className=''; del.addEventListener('click', ()=>{ if(confirm('Delete "'+g.name+'"?')){ const arr=loadLibrary(); arr.splice(idx,1); saveLibrary(arr); renderGallery(); }});
+        const actions = document.createElement('div'); actions.style.marginTop='6px'; actions.appendChild(playBtn); actions.appendChild(del);
+
+        el.appendChild(thumb); el.appendChild(meta); el.appendChild(desc); el.appendChild(actions);
+        gallery.appendChild(el);
+      })
+    }
+
+    async function fileToDataURL(file){ return new Promise((res,rej)=>{ const r = new FileReader(); r.onload = e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(file); }) }
+
+    addBtn.addEventListener('click', async ()=>{
+      const t = typeEl.value; const name = document.getElementById('name').value.trim(); const desc = document.getElementById('desc').value.trim();
+      const thumbFile = document.getElementById('thumb').files[0];
+      let thumb = null; if(thumbFile) thumb = await fileToDataURL(thumbFile);
+
+      const lib = loadLibrary();
+      const item = { type:t, name: name||('Untitled-'+Date.now()), desc, thumb, added: new Date().toISOString() };
+
+      if(t==='html'){
+        const file = document.getElementById('htmlfile').files[0];
+        const url = document.getElementById('htmlurl').value.trim();
+        if(file){
+          // Read html file and store as blob URL reference (persisted as dataURL)
+          const txt = await fileToDataURL(file);
+          item.payload = { kind:'inline', data: txt };
+        } else if(url){
+          item.payload = { kind:'url', data: url };
+        } else { alert('Provide an index.html file or an URL'); return }
+      }
+
+      if(t==='scratch'){
+        const val = document.getElementById('scratchid').value.trim();
+        if(!val){ alert('Enter Scratch project id or URL'); return }
+        // extract numeric id if URL or keep as-is
+        let pid = val;
+        const m = val.match(/projects\/(\d+)/);
+        if(m) pid = m[1];
+        item.payload = { kind:'turbowarp', data: pid };
+      }
+
+      if(t==='python'){
+        const file = document.getElementById('pyfile').files[0];
+        const code = document.getElementById('pycode').value.trim();
+        if(file){ item.payload = { kind:'inline', data: await fileToDataURL(file) } }
+        else if(code){ item.payload = { kind:'code', data: code } }
+        else { alert('Provide a .py file or paste code'); return }
+      }
+
+      lib.unshift(item); saveLibrary(lib); renderGallery();
+      // clear fields lightly
+      document.getElementById('name').value=''; document.getElementById('desc').value=''; document.getElementById('htmlfile').value=''; document.getElementById('htmlurl').value=''; document.getElementById('scratchid').value=''; document.getElementById('pyfile').value=''; document.getElementById('pycode').value=''; document.getElementById('thumb').value='';
+    });
+
+    function loadToPlayer(g){
+      player.innerHTML='';
+      if(g.type==='html'){
+        if(g.payload.kind==='url'){
+          const ifr = document.createElement('iframe'); ifr.src = g.payload.data; player.appendChild(ifr);
+        } else if(g.payload.kind==='inline'){
+          // data URL of html file
+          // convert to blob and create objectURL so iframe can load it
+          try{
+            const data = g.payload.data; // data:[...];base64,...
+            const arr = data.split(','); const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]); let n = bstr.length; const u8 = new Uint8Array(n);
+            while(n--) u8[n] = bstr.charCodeAt(n);
+            const blob = new Blob([u8], {type:mime});
+            const url = URL.createObjectURL(blob);
+            const ifr = document.createElement('iframe'); ifr.src = url; player.appendChild(ifr);
+          }catch(e){ player.innerHTML='<div class="muted">Unable to load HTML file.</div>' }
+        }
+      }
+
+      if(g.type==='scratch'){
+        // Use TurboWarp embed — note: user needs network access to turbowarp.org
+        const pid = g.payload.data;
+        const ifr = document.createElement('iframe');
+        ifr.src = 'https://turbowarp.org/embed/'+encodeURIComponent(pid)+'?autostart=true';
+        player.appendChild(ifr);
+      }
+
+      if(g.type==='python'){
+        // Show python runner UI
+        const container = document.createElement('div'); container.style.display='flex'; container.style.flexDirection='column'; container.style.height='100%';
+        const toolbar = document.createElement('div'); toolbar.style.display='flex'; toolbar.style.gap='8px'; toolbar.style.marginBottom='8px';
+        const runBtn = document.createElement('button'); runBtn.textContent='Run'; runBtn.className='btn';
+        const stopBtn = document.createElement('button'); stopBtn.textContent='Clear'; stopBtn.style.padding='8px'; stopBtn.className='';
+        toolbar.appendChild(runBtn); toolbar.appendChild(stopBtn);
+        const out = document.createElement('pre'); out.style.flex='1'; out.style.background='#02101a'; out.style.padding='8px'; out.style.borderRadius='8px'; out.style.overflow='auto'; out.style.color='#cbeef0'; out.textContent='Python output...';
+        container.appendChild(toolbar); container.appendChild(out);
+        player.appendChild(container);
+
+        // load pyodide lazily
+        let pyodide = null;
+        async function ensurePyodide(){ if(window.pyodide) return window.pyodide; const s = document.createElement('script'); s.src='https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js'; document.head.appendChild(s); await new Promise(r=>s.onload=r); window.pyodide = await loadPyodide(); return window.pyodide }
+
+        runBtn.addEventListener('click', async ()=>{
+          out.textContent='Loading Python runtime...'; try{
+            pyodide = await ensurePyodide();
+            // get code
+            let code=''; if(g.payload.kind==='inline'){ // dataURL of file
+              const d = g.payload.data; const arr = d.split(','); const txt = decodeURIComponent(escape(atob(arr[1]))); code = txt;
+            } else if(g.payload.kind==='code') code = g.payload.data;
+            // capture prints
+            await pyodide.runPythonAsync(`import sys\nclass Capt:\n    def __init__(self): self.buf=[]\n    def write(self,s): self.buf.append(s)\n    def flush(self): pass\ncap=Capt()\nsys.stdout=cap\nsys.stderr=cap\n`);
+            try{
+              await pyodide.runPythonAsync(code);
+              const res = pyodide.runPython('"".join(cap.buf)');
+              out.textContent = res || '\n<no output>'; 
+            } catch(pyErr){ out.textContent = 'Error:\n'+String(pyErr) }
+          } catch(e){ out.textContent = 'Failed loading Pyodide: '+e }
+        });
+        stopBtn.addEventListener('click', ()=>{ out.textContent=''; });
+      }
+    }
+
+    clearBtn.addEventListener('click', ()=>{ if(confirm('Clear local library?')){ localStorage.removeItem('gamehub_lib'); renderGallery(); } });
+    refreshBtn.addEventListener('click', renderGallery);
+
+    // initial render
+    showSections(); renderGallery();
+
+    // helpful: allow dropping an index.html onto gallery to create game quickly
+    document.body.addEventListener('dragover', e=> e.preventDefault());
+    document.body.addEventListener('drop', async e=>{
+      e.preventDefault(); const f = e.dataTransfer.files[0]; if(!f) return; if(f.type==='text/html'){ document.getElementById('htmlfile').files = e.dataTransfer.files; alert('HTML file attached to upload form — click Add to library.'); }
+    });
   </script>
-
-  <script src="script.js"></script>
 </body>
 </html>
