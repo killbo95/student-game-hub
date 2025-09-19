@@ -11,7 +11,6 @@
 <body>
   <!-- (HTML structure unchanged) -->
   <script>
-    // Simple client-side library stored in localStorage
     const typeEl = document.getElementById('type');
     const htmlUpload = document.getElementById('html-upload');
     const scratchUpload = document.getElementById('scratch-upload');
@@ -86,6 +85,8 @@
         let pid = val;
         const m = val.match(/projects\/(\d+)/);
         if(m) pid = m[1];
+        // Always ensure we remove any trailing slashes and query parameters
+        pid = pid.replace(/\D/g,'');
         item.payload = { kind:'turbowarp', data: pid };
       }
 
@@ -122,8 +123,9 @@
       if(g.type==='scratch'){
         const pid = g.payload.data;
         const ifr = document.createElement('iframe');
-        // FIXED: Correct TurboWarp embed path
-        ifr.src = 'https://turbowarp.org/'+encodeURIComponent(pid)+'/embed?autostart=true';
+        // FIXED: force proper TurboWarp embed URL
+        ifr.src = 'https://turbowarp.org/' + pid + '/embed?autostart=true';
+        ifr.width='100%'; ifr.height='100%'; ifr.allowFullscreen = true;
         player.appendChild(ifr);
       }
 
@@ -144,28 +146,4 @@
           out.textContent='Loading Python runtime...'; try{
             pyodide = await ensurePyodide();
             let code=''; if(g.payload.kind==='inline'){
-              const d = g.payload.data; const arr = d.split(','); const txt = decodeURIComponent(escape(atob(arr[1]))); code = txt;
-            } else if(g.payload.kind==='code') code = g.payload.data;
-            await pyodide.runPythonAsync(`import sys\nclass Capt:\n    def __init__(self): self.buf=[]\n    def write(self,s): self.buf.append(s)\n    def flush(self): pass\ncap=Capt()\nsys.stdout=cap\nsys.stderr=cap\n`);
-            try{
-              await pyodide.runPythonAsync(code);
-              const res = pyodide.runPython('"".join(cap.buf)');
-              out.textContent = res || '\n<no output>';
-            } catch(pyErr){ out.textContent = 'Error:\n'+String(pyErr) }
-          } catch(e){ out.textContent = 'Failed loading Pyodide: '+e }
-        });
-        stopBtn.addEventListener('click', ()=>{ out.textContent=''; });
-      }
-    }
-
-    clearBtn.addEventListener('click', ()=>{ if(confirm('Clear local library?')){ localStorage.removeItem('gamehub_lib'); renderGallery(); } });
-    refreshBtn.addEventListener('click', renderGallery);
-
-    showSections(); renderGallery();
-    document.body.addEventListener('dragover', e=> e.preventDefault());
-    document.body.addEventListener('drop', async e=>{
-      e.preventDefault(); const f = e.dataTransfer.files[0]; if(!f) return; if(f.type==='text/html'){ document.getElementById('htmlfile').files = e.dataTransfer.files; alert('HTML file attached to upload form — click Add to library.'); }
-    });
-  </script>
-</body>
-</html>
+              const d = g.payload.data; const arr = d.split(',');
