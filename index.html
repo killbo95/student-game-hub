@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Game Hub</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <h1>🎮 Student Game Hub</h1>
+    <p>Create, Upload, and Play Games!</p>
+  </header>
+
+  <!-- Upload Section -->
+  <section id="upload-section">
+    <h2>Upload or Share Your Game</h2>
+    <form id="game-form">
+      <input type="text" id="game-title" placeholder="Game Title" required>
+      <input type="url" id="game-link" placeholder="Game Link (Replit, Scratch, HTML page)" required>
+      <textarea id="game-desc" placeholder="Short Description"></textarea>
+      <button type="submit">Add Game</button>
+    </form>
+  </section>
+
+  <!-- Games Display -->
+  <section id="games-section">
+    <h2>Student Games</h2>
+    <div id="games-container">
+      <!-- Games will appear here -->
+    </div>
+  </section>
+
+  <footer>
+    <p>Made by Students – Hosted on GitHub Pages</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
