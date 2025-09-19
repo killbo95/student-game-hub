@@ -63,3 +63,44 @@
 </body>
 </html>
 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Games</title>
+</head>
+<body>
+  <h1>Student Games</h1>
+
+  <form id="gameForm">
+    <input type="text" id="gameTitle" placeholder="Game Title" required>
+    <input type="text" id="gameDesc" placeholder="Description" required>
+    <input type="text" id="gameLink" placeholder="Game Link" required>
+    <button type="submit">Add Game</button>
+  </form>
+
+  <div id="games"></div>
+
+  <!-- ✅ Firebase SDKs (Global / CDN version) -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBN7suT93o2D3LS_yhq6hO5P0_C6Q-qVmY",
+      authDomain: "student-games-1da81.firebaseapp.com",
+      projectId: "student-games-1da81",
+      storageBucket: "student-games-1da81.firebasestorage.app",
+      messagingSenderId: "85852942448",
+      appId: "1:85852942448:web:15ffc65ab4cfdc6b0ec4b5"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
+
+  <!-- Your logic -->
+  <script src="script.js"></script>
+</body>
+</html>
