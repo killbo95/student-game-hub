@@ -1,39 +1,49 @@
-const form = document.getElementById("gameForm");
-const gamesDiv = document.getElementById("games");
+// ===== Student Game Hub Script =====
+// This script handles the game submission form,
+// displays games on the page, and auto-converts
+// Scratch project links to proper embed URLs.
 
-// Show games from Firestore in real time
-db.collection("games").orderBy("createdAt", "desc")
-  .onSnapshot(snapshot => {
-    gamesDiv.innerHTML = "";
-    snapshot.forEach(doc => {
-      const g = doc.data();
-      gamesDiv.innerHTML += `
-        <div style="border:1px solid #ccc; padding:10px; margin:10px 0">
-          <h3>${g.title}</h3>
-          <p>${g.desc}</p>
-          <iframe src="${g.link}" width="485" height="402"
-                  frameborder="0" allowfullscreen></iframe>
-        </div>`;
-    });
-  });
+const form = document.getElementById('game-form');
+const container = document.getElementById('games-container');
 
-// Add a new game
-form.addEventListener("submit", async e => {
+form.addEventListener('submit', (e) => {
   e.preventDefault();
-  const title = document.getElementById("gameTitle").value.trim();
-  const desc  = document.getElementById("gameDesc").value.trim();
-  let link    = document.getElementById("gameLink").value.trim();
 
-  // Auto-convert Scratch project URL to embed URL if needed
-  const match = link.match(/scratch\.mit\.edu\/projects\/(\d+)/);
-  if (match) {
-    link = `https://scratch.mit.edu/projects/embed/${match[1]}/?autostart=false`;
+  // === OLD CODE: get input values ===
+  const title = document.getElementById('game-title').value.trim();
+  let link  = document.getElementById('game-link').value.trim();
+  const desc  = document.getElementById('game-desc').value.trim();
+
+  // === NEW FEATURE: Auto-convert Scratch links ===
+  // Detect a normal Scratch project link and turn it into an embed link.
+  // Example:
+  // From: https://scratch.mit.edu/projects/123456/
+  // To:   https://scratch.mit.edu/projects/embed/123456/?autostart=false
+  const scratchMatch = link.match(/scratch\.mit\.edu\/projects\/(\d+)/);
+  if (scratchMatch) {
+    const projectID = scratchMatch[1];
+    link = `https://scratch.mit.edu/projects/embed/${projectID}/?autostart=false`;
   }
 
-  await db.collection("games").add({
-    title, desc, link,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
+  // === OLD CODE: Create the game card ===
+  const card = document.createElement('div');
+  card.className = 'game-card';
+  card.innerHTML = `
+    <h3>${title}</h3>
+    <p>${desc}</p>
+    <iframe 
+      src="${link}" 
+      allowfullscreen 
+      allowtransparency="true" 
+      width="485" 
+      height="402" 
+      frameborder="0">
+    </iframe>
+  `;
 
+  // === OLD CODE: Add it to the top of the container ===
+  container.prepend(card);
+
+  // === OLD CODE: Reset the form ===
   form.reset();
 });
