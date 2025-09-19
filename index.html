@@ -14,7 +14,6 @@
     .wrap{max-width:1100px;margin:18px auto;padding:18px}
     .grid{display:grid;grid-template-columns:360px 1fr;gap:18px}
     .card{background:var(--card);border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,0.03);box-shadow:inset 0 1px 0 rgba(255,255,255,0.02)}
-
     label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
     input[type=text],select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
     textarea{min-height:78px}
@@ -26,240 +25,209 @@
     .meta{display:flex;justify-content:space-between;align-items:center}
     .meta h3{margin:0;font-size:14px}
     .meta small{color:var(--muted)}
-
-    main .player{height:520px;background:#071a27;border-radius:12px;padding:10px;display:flex;align-items:center;justify-content:center}
+    main .player{height:520px;background:#071a27;border-radius:12px;padding:10px}
     iframe{width:100%;height:100%;border:0;border-radius:8px;background:#fff}
     .controls{display:flex;gap:8px;flex-wrap:wrap}
     footer{padding:28px;text-align:center;color:var(--muted)}
-
     @media (max-width:900px){.grid{grid-template-columns:1fr}.card{padding:12px}}
   </style>
 </head>
 <body>
-  <header>
-    <div class="logo">GH</div>
-    <div>
-      <h1>GameHub — Upload & Play (Starter)</h1>
-      <div class="muted">Supports HTML games, Scratch (.sb3) downloads, and client-side Python via Pyodide</div>
-    </div>
-  </header>
+<header>
+  <div class="logo">GH</div>
+  <div>
+    <h1>GameHub — Upload & Play (Starter)</h1>
+    <div class="muted">Supports HTML games, Scratch embeds (TurboWarp), and client-side Python via Pyodide</div>
+  </div>
+</header>
 
-  <div class="wrap">
-    <div class="grid">
+<div class="wrap">
+  <div class="grid">
+    <section class="card">
+      <h2 style="margin-top:2px">Upload a game</h2>
+      <p class="muted">Choose type, provide a name & thumbnail. Uploaded files are stored in your browser (local demo).</p>
+
+      <label>Type</label>
+      <select id="type">
+        <option value="html">HTML / JS (single index.html)</option>
+        <option value="scratch">Scratch (TurboWarp project)</option>
+        <option value="python">Python (runs with Pyodide)</option>
+      </select>
+
+      <label>Game name</label>
+      <input id="name" type="text" placeholder="Cool Jump" />
+
+      <label>Short description</label>
+      <textarea id="desc" placeholder="What is the game about?"></textarea>
+
+      <label>Thumbnail (optional)</label>
+      <input id="thumb" type="file" accept="image/*" />
+
+      <div id="html-upload" style="margin-top:8px">
+        <label>HTML file (index.html)</label>
+        <input id="htmlfile" type="file" accept="text/html" />
+        <div class="muted">Or provide a direct URL to an index.html</div>
+        <input id="htmlurl" type="text" placeholder="https://example.com/game/index.html" style="margin-top:8px" />
+      </div>
+
+      <div id="scratch-upload" style="display:none;margin-top:8px">
+        <label>Scratch project URL or ID</label>
+        <input id="scratchid" type="text" placeholder="https://scratch.mit.edu/projects/123456789 or 123456789" />
+      </div>
+
+      <div id="python-upload" style="display:none;margin-top:8px">
+        <label>Python file (.py) or paste code</label>
+        <input id="pyfile" type="file" accept="text/x-python,text/plain" />
+        <textarea id="pycode" placeholder="# paste Python code here (prints to stdout)"></textarea>
+      </div>
+
+      <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+        <button class="btn" id="addBtn">Add to library</button>
+        <button id="clearBtn" style="background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:8px">Clear local library</button>
+      </div>
+    </section>
+
+    <main>
       <section class="card">
-        <h2 style="margin-top:2px">Upload a game</h2>
-        <p class="muted">Choose type, provide a name & thumbnail. Uploaded files are stored in your browser (local demo). For public hosting, push files to your GitHub repo or submit a PR.</p>
-
-        <label>Type</label>
-        <select id="type">
-          <option value="html">HTML / JS (single index.html)</option>
-          <option value="scratch">Scratch (.sb3 file)</option>
-          <option value="python">Python (runs with Pyodide)</option>
-        </select>
-
-        <label>Game name</label>
-        <input id="name" type="text" placeholder="Cool Jump" />
-
-        <label>Short description</label>
-        <textarea id="desc" placeholder="What is the game about?"></textarea>
-
-        <label>Thumbnail (optional)</label>
-        <input id="thumb" type="file" accept="image/*" />
-
-        <div id="html-upload" style="margin-top:8px">
-          <label>HTML file (index.html)</label>
-          <input id="htmlfile" type="file" accept="text/html" />
-          <div class="muted">Or provide a direct URL to an index.html</div>
-          <input id="htmlurl" type="text" placeholder="https://example.com/game/index.html" style="margin-top:8px" />
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h2 style="margin:0">Library</h2>
+          <div class="controls">
+            <button id="refreshBtn" class="btn" style="padding:8px 10px">Refresh</button>
+          </div>
         </div>
-
-        <div id="scratch-upload" style="display:none;margin-top:8px">
-          <label>Scratch project (.sb3 file)</label>
-          <input id="scratchfile" type="file" accept=".sb3" />
+        <div style="margin-top:12px">
+          <div class="gallery" id="gallery"></div>
         </div>
-
-        <div id="python-upload" style="display:none;margin-top:8px">
-          <label>Python file (.py) or paste code</label>
-          <input id="pyfile" type="file" accept="text/x-python,text/plain" />
-          <textarea id="pycode" placeholder="# paste Python code here (prints to stdout)"></textarea>
-        </div>
-
-        <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
-          <button class="btn" id="addBtn">Add to library</button>
-          <button id="clearBtn" style="background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:8px">Clear local library</button>
-        </div>
-
-        <hr style="margin:12px 0;border:none;height:1px;background:rgba(255,255,255,0.02)" />
-        <div class="muted">Developer notes:</div>
-        <ul class="muted" style="padding-left:18px;margin:6px 0">
-          <li>GitHub Pages hosts static files—use PRs to add public games.</li>
-          <li>Scratch projects are stored for download as .sb3 files.</li>
-          <li>Python runs in-browser using Pyodide (downloads runtime when first used).</li>
-        </ul>
       </section>
 
-      <main>
-        <section class="card">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <h2 style="margin:0">Library</h2>
-            <div class="controls">
-              <button id="refreshBtn" class="btn" style="padding:8px 10px">Refresh</button>
-            </div>
-          </div>
-
-          <div style="margin-top:12px">
-            <div class="gallery" id="gallery"></div>
-          </div>
-        </section>
-
-        <section class="card" style="margin-top:12px">
-          <h2 style="margin:0">Player</h2>
-          <div class="player" id="player">
-            <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);">Select a game from the library to play</div>
-          </div>
-        </section>
-      </main>
-    </div>
-
-    <footer class="muted">This is a starter template. To publish publicly, add content to your GitHub repo and enable GitHub Pages (set index.html at repo root).</footer>
+      <section class="card" style="margin-top:12px">
+        <h2 style="margin:0">Player</h2>
+        <div class="player" id="player">
+          <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);">Select a game from the library to play</div>
+        </div>
+      </section>
+    </main>
   </div>
+  <footer class="muted">Starter template — supports HTML, Scratch (TurboWarp embed), and Python (Pyodide)</footer>
+</div>
 
-  <script>
-    const typeEl = document.getElementById('type');
-    const htmlUpload = document.getElementById('html-upload');
-    const scratchUpload = document.getElementById('scratch-upload');
-    const pythonUpload = document.getElementById('python-upload');
-    const addBtn = document.getElementById('addBtn');
-    const gallery = document.getElementById('gallery');
-    const player = document.getElementById('player');
-    const clearBtn = document.getElementById('clearBtn');
-    const refreshBtn = document.getElementById('refreshBtn');
+<script>
+const typeEl=document.getElementById('type');
+const htmlUpload=document.getElementById('html-upload');
+const scratchUpload=document.getElementById('scratch-upload');
+const pythonUpload=document.getElementById('python-upload');
+const addBtn=document.getElementById('addBtn');
+const gallery=document.getElementById('gallery');
+const player=document.getElementById('player');
+const clearBtn=document.getElementById('clearBtn');
+const refreshBtn=document.getElementById('refreshBtn');
 
-    function showSections(){
-      const t = typeEl.value;
-      htmlUpload.style.display = t==='html'? 'block':'none';
-      scratchUpload.style.display = t==='scratch'? 'block':'none';
-      pythonUpload.style.display = t==='python'? 'block':'none';
-    }
-    typeEl.addEventListener('change', showSections);
+function showSections(){
+  const t=typeEl.value;
+  htmlUpload.style.display=t==='html'?'block':'none';
+  scratchUpload.style.display=t==='scratch'?'block':'none';
+  pythonUpload.style.display=t==='python'?'block':'none';
+}
+typeEl.addEventListener('change',showSections);
 
-    function loadLibrary(){ const raw = localStorage.getItem('gamehub_lib'); return raw? JSON.parse(raw):[] }
-    function saveLibrary(list){ localStorage.setItem('gamehub_lib', JSON.stringify(list)) }
+function loadLibrary(){return localStorage.getItem('gamehub_lib')?JSON.parse(localStorage.getItem('gamehub_lib')):[];}
+function saveLibrary(list){localStorage.setItem('gamehub_lib',JSON.stringify(list));}
 
-    function renderGallery(){
-      const list = loadLibrary();
-      gallery.innerHTML='';
-      if(!list.length){ gallery.innerHTML='<div class="muted">No games yet — add one from the left panel.</div>'; return }
-      list.forEach((g, idx)=>{
-        const el = document.createElement('div'); el.className='game-card';
-        const thumb = document.createElement('div'); thumb.className='thumb';
-        if(g.thumb){ const img = document.createElement('img'); img.src=g.thumb; img.style.width='100%'; img.style.height='100%'; img.style.objectFit='cover'; thumb.innerHTML=''; thumb.appendChild(img);}
-        else thumb.textContent=g.type.toUpperCase();
-        const meta = document.createElement('div'); meta.className='meta';
-        const title = document.createElement('h3'); title.textContent=g.name||'Untitled';
-        const small = document.createElement('small'); small.textContent=g.type+' • '+(new Date(g.added).toLocaleString());
-        meta.appendChild(title); meta.appendChild(small);
-        const desc = document.createElement('div'); desc.className='muted'; desc.textContent=g.desc||'';
-        const playBtn = document.createElement('button'); playBtn.className='btn'; playBtn.style.fontSize='13px'; playBtn.textContent='Play';
-        playBtn.addEventListener('click', ()=> loadToPlayer(g));
-        const del = document.createElement('button'); del.textContent='Delete'; del.style.marginLeft='8px'; del.addEventListener('click', ()=>{ if(confirm('Delete "'+g.name+'"?')){ const arr=loadLibrary(); arr.splice(idx,1); saveLibrary(arr); renderGallery(); }});
-        const actions = document.createElement('div'); actions.style.marginTop='6px'; actions.appendChild(playBtn); actions.appendChild(del);
-        el.appendChild(thumb); el.appendChild(meta); el.appendChild(desc); el.appendChild(actions);
-        gallery.appendChild(el);
-      });
-    }
+function renderGallery(){
+  const list=loadLibrary();
+  gallery.innerHTML='';
+  if(!list.length){gallery.innerHTML='<div class="muted">No games yet — add one from the left panel.</div>';return;}
+  list.forEach((g,idx)=>{
+    const el=document.createElement('div'); el.className='game-card';
+    const thumb=document.createElement('div'); thumb.className='thumb';
+    if(g.thumb){const img=document.createElement('img');img.src=g.thumb;img.style.width='100%';img.style.height='100%';img.style.objectFit='cover';thumb.innerHTML='';thumb.appendChild(img);} else {thumb.textContent=g.type.toUpperCase()}
+    const meta=document.createElement('div');meta.className='meta';
+    const title=document.createElement('h3');title.textContent=g.name||'Untitled';
+    const small=document.createElement('small');small.textContent=g.type+' • '+(new Date(g.added).toLocaleString());
+    meta.appendChild(title);meta.appendChild(small);
+    const desc=document.createElement('div');desc.className='muted';desc.textContent=g.desc||'';
+    const playBtn=document.createElement('button');playBtn.className='btn';playBtn.style.fontSize='13px';playBtn.textContent='Play';
+    playBtn.addEventListener('click',()=>loadToPlayer(g));
+    const del=document.createElement('button');del.textContent='Delete';del.style.marginLeft='8px';del.addEventListener('click',()=>{if(confirm('Delete "'+g.name+'"?')){const arr=loadLibrary();arr.splice(idx,1);saveLibrary(arr);renderGallery();}});
+    const actions=document.createElement('div');actions.style.marginTop='6px';actions.appendChild(playBtn);actions.appendChild(del);
+    el.appendChild(thumb);el.appendChild(meta);el.appendChild(desc);el.appendChild(actions);
+    gallery.appendChild(el);
+  });
+}
 
-    async function fileToDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(file); }) }
+async function fileToDataURL(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsDataURL(file);})}
 
-    addBtn.addEventListener('click', async ()=>{
-      const t = typeEl.value; const name=document.getElementById('name').value.trim(); const desc=document.getElementById('desc').value.trim();
-      const thumbFile=document.getElementById('thumb').files[0]; let thumb=null; if(thumbFile) thumb=await fileToDataURL(thumbFile);
+addBtn.addEventListener('click',async ()=>{
+  const t=typeEl.value;
+  const name=document.getElementById('name').value.trim();
+  const desc=document.getElementById('desc').value.trim();
+  const thumbFile=document.getElementById('thumb').files[0];
+  let thumb=null;if(thumbFile) thumb=await fileToDataURL(thumbFile);
+  const lib=loadLibrary();
+  const item={type:t,name:name||('Untitled-'+Date.now()),desc,thumb,added:new Date().toISOString()};
+  
+  if(t==='html'){
+    const file=document.getElementById('htmlfile').files[0];
+    const url=document.getElementById('htmlurl').value.trim();
+    if(file){const txt=await fileToDataURL(file);item.payload={kind:'inline',data:txt};} 
+    else if(url){item.payload={kind:'url',data:url};} 
+    else {alert('Provide an index.html file or an URL');return;}
+  }
 
-      const lib = loadLibrary();
-      const item={ type:t, name:name||('Untitled-'+Date.now()), desc, thumb, added:new Date().toISOString() };
+  if(t==='scratch'){
+    let val=document.getElementById('scratchid').value.trim();
+    if(!val){alert('Enter Scratch project id or URL');return;}
+    const m=val.match(/projects\/(\d+)/);
+    const pid=m?m[1]:val;
+    item.payload={kind:'turbowarp',data:pid};
+  }
 
-      if(t==='html'){
-        const file=document.getElementById('htmlfile').files[0];
-        const url=document.getElementById('htmlurl').value.trim();
-        if(file){ item.payload={ kind:'inline', data:await fileToDataURL(file) }; }
-        else if(url){ item.payload={ kind:'url', data:url }; }
-        else{ alert('Provide an index.html file or an URL'); return }
-      }
+  if(t==='python'){
+    const file=document.getElementById('pyfile').files[0];
+    const code=document.getElementById('pycode').value.trim();
+    if(file){item.payload={kind:'inline',data:await fileToDataURL(file)}}
+    else if(code){item.payload={kind:'code',data:code}}
+    else {alert('Provide a .py file or paste code');return;}
+  }
 
-      if(t==='scratch'){
-        const file=document.getElementById('scratchfile').files[0];
-        if(!file){ alert('Upload a .sb3 file'); return; }
-        item.payload={ kind:'file', data:await fileToDataURL(file) };
-      }
+  lib.unshift(item);saveLibrary(lib);renderGallery();
+  document.getElementById('name').value='';document.getElementById('desc').value='';document.getElementById('htmlfile').value='';document.getElementById('htmlurl').value='';document.getElementById('scratchid').value='';document.getElementById('pyfile').value='';document.getElementById('pycode').value='';document.getElementById('thumb').value='';
+});
 
-      if(t==='python'){
-        const file=document.getElementById('pyfile').files[0];
-        const code=document.getElementById('pycode').value.trim();
-        if(file){ item.payload={ kind:'inline', data:await fileToDataURL(file) } }
-        else if(code){ item.payload={ kind:'code', data:code } }
-        else{ alert('Provide a .py file or paste code'); return }
-      }
+function loadToPlayer(g){
+  player.innerHTML='';
+  if(g.type==='html'){
+    if(g.payload.kind==='url'){const ifr=document.createElement('iframe');ifr.src=g.payload.data;player.appendChild(ifr);}
+    else if(g.payload.kind==='inline'){try{const arr=g.payload.data.split(',');const mime=arr[0].match(/:(.*?);/)[1];const bstr=atob(arr[1]);let n=bstr.length;const u8=new Uint8Array(n);while(n--) u8[n]=bstr.charCodeAt(n);const blob=new Blob([u8],{type:mime});const url=URL.createObjectURL(blob);const ifr=document.createElement('iframe');ifr.src=url;player.appendChild(ifr);}catch(e){player.innerHTML='<div class="muted">Unable to load HTML file.</div>'}}
+  }
+  if(g.type==='scratch'){
+    const pid=g.payload.data;
+    const ifr=document.createElement('iframe');
+    ifr.src='https://turbowarp.org/'+encodeURIComponent(pid)+'/embed?autostart=true';
+    player.appendChild(ifr);
+  }
+  if(g.type==='python'){
+    const container=document.createElement('div');container.style.display='flex';container.style.flexDirection='column';container.style.height='100%';
+    const toolbar=document.createElement('div');toolbar.style.display='flex';toolbar.style.gap='8px';toolbar.style.marginBottom='8px';
+    const runBtn=document.createElement('button');runBtn.textContent='Run';runBtn.className='btn';
+    const stopBtn=document.createElement('button');stopBtn.textContent='Clear';stopBtn.style.padding='8px';
+    toolbar.appendChild(runBtn);toolbar.appendChild(stopBtn);
+    const out=document.createElement('pre');out.style.flex='1';out.style.background='#02101a';out.style.padding='8px';out.style.borderRadius='8px';out.style.overflow='auto';out.style.color='#cbeef0';out.textContent='Python output...';
+    container.appendChild(toolbar);container.appendChild(out);player.appendChild(container);
+    let pyodide=null;
+    async function ensurePyodide(){if(window.pyodide) return window.pyodide;const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js';document.head.appendChild(s);await new Promise(r=>s.onload=r);window.pyodide=await loadPyodide();return window.pyodide}
+    runBtn.addEventListener('click',async ()=>{out.textContent='Loading Python runtime...';try{pyodide=await ensurePyodide();let code='';if(g.payload.kind==='inline'){const arr=g.payload.data.split(',');code=decodeURIComponent(escape(atob(arr[1])));} else if(g.payload.kind==='code') code=g.payload.data;await pyodide.runPythonAsync(`import sys\nclass Capt:\n    def __init__(self): self.buf=[]\n    def write(self,s): self.buf.append(s)\n    def flush(self): pass\ncap=Capt()\nsys.stdout=cap\nsys.stderr=cap\n`);try{await pyodide.runPythonAsync(code);const res=pyodide.runPython('"".join(cap.buf)');out.textContent=res||'\n<no output>'}catch(pyErr){out.textContent='Error:\n'+String(pyErr)}}catch(e){out.textContent='Failed loading Pyodide: '+e}});
+    stopBtn.addEventListener('click',()=>{out.textContent='';});
+  }
+}
 
-      lib.unshift(item); saveLibrary(lib); renderGallery();
-      document.getElementById('name').value=''; document.getElementById('desc').value=''; document.getElementById('htmlfile').value=''; document.getElementById('htmlurl').value=''; document.getElementById('scratchfile').value=''; document.getElementById('pyfile').value=''; document.getElementById('pycode').value=''; document.getElementById('thumb').value='';
-    });
+clearBtn.addEventListener('click',()=>{if(confirm('Clear local library?')){localStorage.removeItem('gamehub_lib');renderGallery();}});
+refreshBtn.addEventListener('click',renderGallery);
 
-    function loadToPlayer(g){
-      player.innerHTML='';
-      if(g.type==='html'){
-        if(g.payload.kind==='url'){
-          const ifr=document.createElement('iframe'); ifr.src=g.payload.data; player.appendChild(ifr);
-        } else if(g.payload.kind==='inline'){
-          try{
-            const data=g.payload.data; const arr=data.split(','); const mime=arr[0].match(/:(.*?);/)[1]; const bstr=atob(arr[1]); let n=bstr.length; const u8=new Uint8Array(n);
-            while(n--) u8[n]=bstr.charCodeAt(n); const blob=new Blob([u8], {type:mime}); const url=URL.createObjectURL(blob); const ifr=document.createElement('iframe'); ifr.src=url; player.appendChild(ifr);
-          }catch(e){ player.innerHTML='<div class="muted">Unable to load HTML file.</div>' }
-        }
-      }
+showSections();renderGallery();
 
-      if(g.type==='scratch'){
-        const btn=document.createElement('button'); btn.textContent='Download .sb3'; btn.className='btn';
-        btn.addEventListener('click', ()=>{
-          const arr=g.payload.data.split(','); const bstr=atob(arr[1]); const n=bstr.length; const u8=new Uint8Array(n);
-          for(let i=0;i<n;i++) u8[i]=bstr.charCodeAt(i);
-          const blob=new Blob([u8], {type:'application/x.sb3'});
-          const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=g.name+'.sb3'; a.click(); URL.revokeObjectURL(url);
-        });
-        player.appendChild(btn);
-      }
-
-      if(g.type==='python'){
-        const container=document.createElement('div'); container.style.display='flex'; container.style.flexDirection='column'; container.style.height='100%';
-        const toolbar=document.createElement('div'); toolbar.style.display='flex'; toolbar.style.gap='8px'; toolbar.style.marginBottom='8px';
-        const runBtn=document.createElement('button'); runBtn.textContent='Run'; runBtn.className='btn';
-        const stopBtn=document.createElement('button'); stopBtn.textContent='Clear'; stopBtn.style.padding='8px';
-        toolbar.appendChild(runBtn); toolbar.appendChild(stopBtn);
-        const out=document.createElement('pre'); out.style.flex='1'; out.style.background='#02101a'; out.style.padding='8px'; out.style.borderRadius='8px'; out.style.overflow='auto'; out.style.color='#cbeef0'; out.textContent='Python output...';
-        container.appendChild(toolbar); container.appendChild(out); player.appendChild(container);
-
-        let pyodide=null;
-        async function ensurePyodide(){ if(window.pyodide) return window.pyodide; const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js'; document.head.appendChild(s); await new Promise(r=>s.onload=r); window.pyodide=await loadPyodide(); return window.pyodide }
-
-        runBtn.addEventListener('click', async ()=>{
-          out.textContent='Loading Python runtime...'; try{
-            pyodide=await ensurePyodide();
-            let code=''; if(g.payload.kind==='inline'){ const d=g.payload.data; const arr=d.split(','); code=decodeURIComponent(escape(atob(arr[1]))); } else if(g.payload.kind==='code') code=g.payload.data;
-            await pyodide.runPythonAsync(`import sys\nclass Capt:\n    def __init__(self): self.buf=[]\n    def write(self,s): self.buf.append(s)\n    def flush(self): pass\ncap=Capt()\nsys.stdout=cap\nsys.stderr=cap\n`);
-            try{ await pyodide.runPythonAsync(code); const res=pyodide.runPython('"".join(cap.buf)'); out.textContent=res||'\n<no output>'; } catch(pyErr){ out.textContent='Error:\n'+String(pyErr) }
-          } catch(e){ out.textContent='Failed loading Pyodide: '+e }
-        });
-        stopBtn.addEventListener('click', ()=>{ out.textContent=''; });
-      }
-    }
-
-    clearBtn.addEventListener('click', ()=>{ if(confirm('Clear local library?')){ localStorage.removeItem('gamehub_lib'); renderGallery(); } });
-    refreshBtn.addEventListener('click', renderGallery);
-
-    showSections(); renderGallery();
-    document.body.addEventListener('dragover', e=> e.preventDefault());
-    document.body.addEventListener('drop', async e=>{
-      e.preventDefault(); const f=e.dataTransfer.files[0]; if(!f) return; if(f.type==='text/html'){ document.getElementById('htmlfile').files=e.dataTransfer.files; alert('HTML file attached to upload form — click Add to library.'); }
-    });
-  </script>
+document.body.addEventListener('dragover',e=>e.preventDefault());
+document.body.addEventListener('drop',async e=>{e.preventDefault();const f=e.dataTransfer.files[0];if(!f) return;if(f.type==='text/html'){document.getElementById('htmlfile').files=e.dataTransfer.files;alert('HTML file attached — click Add to library.');}});
+</script>
 </body>
 </html>
