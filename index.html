@@ -27,14 +27,34 @@
   <!-- Games Display -->
   <section id="games-section">
     <h2>Student Games</h2>
-    <div id="games-container">
-      <!-- Games will appear here -->
-    </div>
+    <div id="games-container"></div>
   </section>
 
   <footer>
     <p>Made by Students – Hosted on GitHub Pages</p>
   </footer>
+
+  <!-- Firebase core -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-analytics.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBN7suT93o2D3LS_yhq6hO5P0_C6Q-qVmY",
+      authDomain: "student-games-1da81.firebaseapp.com",
+      projectId: "student-games-1da81",
+      storageBucket: "student-games-1da81.firebasestorage.app",
+      messagingSenderId: "85852942448",
+      appId: "1:85852942448:web:15ffc65ab4cfdc6b0ec4b5",
+      measurementId: "G-1PESQZG8NN"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const analytics = firebase.analytics();
+  </script>
 
   <script src="script.js"></script>
 </body>
