@@ -1,42 +1,39 @@
-// Reference to the "games" collection in Firestore
-const gamesRef = db.collection("games");
+const form = document.getElementById("gameForm");
+const gamesDiv = document.getElementById("games");
 
-// Load existing games on page load
-gamesRef.orderBy("createdAt", "desc").onSnapshot(snapshot => {
-  container.innerHTML = ""; // clear first
-  snapshot.forEach(doc => addGameCard(doc.data()));
-});
+// Show games from Firestore in real time
+db.collection("games").orderBy("createdAt", "desc")
+  .onSnapshot(snapshot => {
+    gamesDiv.innerHTML = "";
+    snapshot.forEach(doc => {
+      const g = doc.data();
+      gamesDiv.innerHTML += `
+        <div style="border:1px solid #ccc; padding:10px; margin:10px 0">
+          <h3>${g.title}</h3>
+          <p>${g.desc}</p>
+          <iframe src="${g.link}" width="485" height="402"
+                  frameborder="0" allowfullscreen></iframe>
+        </div>`;
+    });
+  });
 
-form.addEventListener("submit", async (e) => {
+// Add a new game
+form.addEventListener("submit", async e => {
   e.preventDefault();
-  const title = document.getElementById('game-title').value.trim();
-  let link = document.getElementById('game-link').value.trim();
-  const desc = document.getElementById('game-desc').value.trim();
+  const title = document.getElementById("gameTitle").value.trim();
+  const desc  = document.getElementById("gameDesc").value.trim();
+  let link    = document.getElementById("gameLink").value.trim();
 
-  // Convert Scratch URL to embed
-  const scratchMatch = link.match(/scratch\.mit\.edu\/projects\/(\d+)/);
-  if (scratchMatch) {
-    link = `https://scratch.mit.edu/projects/embed/${scratchMatch[1]}/?autostart=false`;
+  // Auto-convert Scratch project URL to embed URL if needed
+  const match = link.match(/scratch\.mit\.edu\/projects\/(\d+)/);
+  if (match) {
+    link = `https://scratch.mit.edu/projects/embed/${match[1]}/?autostart=false`;
   }
 
-  await gamesRef.add({
-    title,
-    link,
-    desc,
+  await db.collection("games").add({
+    title, desc, link,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
 
   form.reset();
 });
-
-function addGameCard(game) {
-  const card = document.createElement('div');
-  card.className = 'game-card';
-  card.innerHTML = `
-    <h3>${game.title}</h3>
-    <p>${game.desc}</p>
-    <iframe src="${game.link}" allowtransparency="true"
-            width="485" height="402" frameborder="0" allowfullscreen></iframe>
-  `;
-  container.appendChild(card);
-}
