@@ -1,233 +1,155 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>GameHub — Upload & Play (Starter)</title>
+  <meta charset="UTF-8">
+  <title>GameHub – Scratch + HTML + Python Games</title>
   <style>
-    :root{--bg:#0f1724;--card:#0b1220;--accent:#6ee7b7;--muted:#9aa4b2;--glass:rgba(255,255,255,0.03)}
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:#e6eef6;background:linear-gradient(180deg,#071422 0%, #071827 60%);min-height:100vh}
-    header{padding:28px 20px;display:flex;align-items:center;gap:16px}
-    .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#60a5fa);display:flex;align-items:center;justify-content:center;font-weight:700;color:#002;box-shadow:0 6px 18px rgba(2,6,23,.5)}
-    h1{margin:0;font-size:20px}
-    .wrap{max-width:1100px;margin:18px auto;padding:18px}
-    .grid{display:grid;grid-template-columns:360px 1fr;gap:18px}
-    .card{background:var(--card);border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,0.03);box-shadow:inset 0 1px 0 rgba(255,255,255,0.02)}
-    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
-    input[type=text],select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
-    textarea{min-height:78px}
-    .btn{display:inline-block;padding:10px 12px;border-radius:10px;background:linear-gradient(90deg,var(--accent),#60a5fa);color:#002;font-weight:700;border:none;cursor:pointer}
-    .muted{color:var(--muted);font-size:13px}
-    .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
-    .game-card{background:var(--glass);padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,0.02);display:flex;flex-direction:column;gap:8px}
-    .thumb{height:110px;border-radius:8px;background:#08121b;display:flex;align-items:center;justify-content:center;color:var(--muted);overflow:hidden}
-    .meta{display:flex;justify-content:space-between;align-items:center}
-    .meta h3{margin:0;font-size:14px}
-    .meta small{color:var(--muted)}
-    main .player{height:520px;background:#071a27;border-radius:12px;padding:10px}
-    iframe{width:100%;height:100%;border:0;border-radius:8px;background:#fff}
-    .controls{display:flex;gap:8px;flex-wrap:wrap}
-    footer{padding:28px;text-align:center;color:var(--muted)}
-    @media (max-width:900px){.grid{grid-template-columns:1fr}.card{padding:12px}}
+    body{font-family:Arial, sans-serif;background:#f4f4f4;margin:0;padding:0;}
+    header{background:#222;color:#fff;padding:15px;text-align:center;font-size:24px;font-weight:bold;}
+    #container{display:flex;flex-wrap:wrap;padding:20px;gap:20px;}
+    .game-card{background:#fff;padding:15px;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,.2);width:280px;}
+    .game-card h3{margin-top:0;}
+    .player iframe{width:100%;height:210px;border:none;border-radius:8px;}
+    .btn{display:inline-block;margin-top:10px;padding:6px 12px;background:#222;color:#fff;border:none;border-radius:4px;cursor:pointer;}
+    .btn:hover{background:#444;}
+    #uploadSection{background:#fff;padding:20px;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,.2);margin:20px;}
+    #library{padding:20px;}
+    #library h2{text-align:center;margin-top:0;}
+    label{display:block;margin-top:10px;}
   </style>
 </head>
 <body>
-<header>
-  <div class="logo">GH</div>
-  <div>
-    <h1>GameHub — Upload & Play (Starter)</h1>
-    <div class="muted">Supports HTML games, Scratch embeds (TurboWarp), and client-side Python via Pyodide</div>
+<header>🎮 GameHub – Play & Share Games</header>
+
+<div id="uploadSection">
+  <h2>Add a New Game</h2>
+  <label>Game Name</label>
+  <input id="gameName" type="text" placeholder="My Cool Game">
+  <label>Type</label>
+  <select id="gameType">
+    <option value="scratch">Scratch</option>
+    <option value="html">HTML</option>
+    <option value="python">Python</option>
+  </select>
+
+  <div id="scratchInput">
+    <label>Scratch Project ID (numbers only)</label>
+    <input id="scratchID" type="text" placeholder="e.g. 123456789">
   </div>
-</header>
 
-<div class="wrap">
-  <div class="grid">
-    <section class="card">
-      <h2 style="margin-top:2px">Upload a game</h2>
-      <p class="muted">Choose type, provide a name & thumbnail. Uploaded files are stored in your browser (local demo).</p>
-
-      <label>Type</label>
-      <select id="type">
-        <option value="html">HTML / JS (single index.html)</option>
-        <option value="scratch">Scratch (TurboWarp project)</option>
-        <option value="python">Python (runs with Pyodide)</option>
-      </select>
-
-      <label>Game name</label>
-      <input id="name" type="text" placeholder="Cool Jump" />
-
-      <label>Short description</label>
-      <textarea id="desc" placeholder="What is the game about?"></textarea>
-
-      <label>Thumbnail (optional)</label>
-      <input id="thumb" type="file" accept="image/*" />
-
-      <div id="html-upload" style="margin-top:8px">
-        <label>HTML file (index.html)</label>
-        <input id="htmlfile" type="file" accept="text/html" />
-        <div class="muted">Or provide a direct URL to an index.html</div>
-        <input id="htmlurl" type="text" placeholder="https://example.com/game/index.html" style="margin-top:8px" />
-      </div>
-
-      <div id="scratch-upload" style="display:none;margin-top:8px">
-        <label>Scratch project URL or ID</label>
-        <input id="scratchid" type="text" placeholder="https://scratch.mit.edu/projects/123456789 or 123456789" />
-      </div>
-
-      <div id="python-upload" style="display:none;margin-top:8px">
-        <label>Python file (.py) or paste code</label>
-        <input id="pyfile" type="file" accept="text/x-python,text/plain" />
-        <textarea id="pycode" placeholder="# paste Python code here (prints to stdout)"></textarea>
-      </div>
-
-      <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
-        <button class="btn" id="addBtn">Add to library</button>
-        <button id="clearBtn" style="background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:8px">Clear local library</button>
-      </div>
-    </section>
-
-    <main>
-      <section class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <h2 style="margin:0">Library</h2>
-          <div class="controls">
-            <button id="refreshBtn" class="btn" style="padding:8px 10px">Refresh</button>
-          </div>
-        </div>
-        <div style="margin-top:12px">
-          <div class="gallery" id="gallery"></div>
-        </div>
-      </section>
-
-      <section class="card" style="margin-top:12px">
-        <h2 style="margin:0">Player</h2>
-        <div class="player" id="player">
-          <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);">Select a game from the library to play</div>
-        </div>
-      </section>
-    </main>
+  <div id="htmlInput" style="display:none">
+    <label>Upload HTML File</label>
+    <input id="htmlfile" type="file" accept=".html">
   </div>
-  <footer class="muted">Starter template — supports HTML, Scratch (TurboWarp embed), and Python (Pyodide)</footer>
+
+  <div id="pythonInput" style="display:none">
+    <label>Upload Python File</label>
+    <input id="pyfile" type="file" accept=".py">
+  </div>
+
+  <button class="btn" id="addBtn">Add to Library</button>
 </div>
 
+<section id="library">
+  <h2>🎯 Game Library</h2>
+  <div id="container"></div>
+</section>
+
 <script>
-const typeEl=document.getElementById('type');
-const htmlUpload=document.getElementById('html-upload');
-const scratchUpload=document.getElementById('scratch-upload');
-const pythonUpload=document.getElementById('python-upload');
-const addBtn=document.getElementById('addBtn');
-const gallery=document.getElementById('gallery');
-const player=document.getElementById('player');
-const clearBtn=document.getElementById('clearBtn');
-const refreshBtn=document.getElementById('refreshBtn');
+  const container = document.getElementById('container');
+  const typeSel = document.getElementById('gameType');
+  const scratchInput = document.getElementById('scratchInput');
+  const htmlInput = document.getElementById('htmlInput');
+  const pythonInput = document.getElementById('pythonInput');
 
-function showSections(){
-  const t=typeEl.value;
-  htmlUpload.style.display=t==='html'?'block':'none';
-  scratchUpload.style.display=t==='scratch'?'block':'none';
-  pythonUpload.style.display=t==='python'?'block':'none';
-}
-typeEl.addEventListener('change',showSections);
-
-function loadLibrary(){return localStorage.getItem('gamehub_lib')?JSON.parse(localStorage.getItem('gamehub_lib')):[];}
-function saveLibrary(list){localStorage.setItem('gamehub_lib',JSON.stringify(list));}
-
-function renderGallery(){
-  const list=loadLibrary();
-  gallery.innerHTML='';
-  if(!list.length){gallery.innerHTML='<div class="muted">No games yet — add one from the left panel.</div>';return;}
-  list.forEach((g,idx)=>{
-    const el=document.createElement('div'); el.className='game-card';
-    const thumb=document.createElement('div'); thumb.className='thumb';
-    if(g.thumb){const img=document.createElement('img');img.src=g.thumb;img.style.width='100%';img.style.height='100%';img.style.objectFit='cover';thumb.innerHTML='';thumb.appendChild(img);} else {thumb.textContent=g.type.toUpperCase()}
-    const meta=document.createElement('div');meta.className='meta';
-    const title=document.createElement('h3');title.textContent=g.name||'Untitled';
-    const small=document.createElement('small');small.textContent=g.type+' • '+(new Date(g.added).toLocaleString());
-    meta.appendChild(title);meta.appendChild(small);
-    const desc=document.createElement('div');desc.className='muted';desc.textContent=g.desc||'';
-    const playBtn=document.createElement('button');playBtn.className='btn';playBtn.style.fontSize='13px';playBtn.textContent='Play';
-    playBtn.addEventListener('click',()=>loadToPlayer(g));
-    const del=document.createElement('button');del.textContent='Delete';del.style.marginLeft='8px';del.addEventListener('click',()=>{if(confirm('Delete "'+g.name+'"?')){const arr=loadLibrary();arr.splice(idx,1);saveLibrary(arr);renderGallery();}});
-    const actions=document.createElement('div');actions.style.marginTop='6px';actions.appendChild(playBtn);actions.appendChild(del);
-    el.appendChild(thumb);el.appendChild(meta);el.appendChild(desc);el.appendChild(actions);
-    gallery.appendChild(el);
+  typeSel.addEventListener('change', ()=>{
+    scratchInput.style.display = typeSel.value==='scratch' ? 'block':'none';
+    htmlInput.style.display = typeSel.value==='html' ? 'block':'none';
+    pythonInput.style.display = typeSel.value==='python' ? 'block':'none';
   });
-}
 
-async function fileToDataURL(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsDataURL(file);})}
+  let library = JSON.parse(localStorage.getItem('gamehub_library') || '[]');
 
-addBtn.addEventListener('click',async ()=>{
-  const t=typeEl.value;
-  const name=document.getElementById('name').value.trim();
-  const desc=document.getElementById('desc').value.trim();
-  const thumbFile=document.getElementById('thumb').files[0];
-  let thumb=null;if(thumbFile) thumb=await fileToDataURL(thumbFile);
-  const lib=loadLibrary();
-  const item={type:t,name:name||('Untitled-'+Date.now()),desc,thumb,added:new Date().toISOString()};
-  
-  if(t==='html'){
-    const file=document.getElementById('htmlfile').files[0];
-    const url=document.getElementById('htmlurl').value.trim();
-    if(file){const txt=await fileToDataURL(file);item.payload={kind:'inline',data:txt};} 
-    else if(url){item.payload={kind:'url',data:url};} 
-    else {alert('Provide an index.html file or an URL');return;}
+  function saveLibrary(){ localStorage.setItem('gamehub_library', JSON.stringify(library)); }
+
+  function renderLibrary(){
+    container.innerHTML = '';
+    library.forEach((g, i)=>{
+      const card = document.createElement('div');
+      card.className='game-card';
+      card.innerHTML = `<h3>${g.name}</h3><div class="player"></div>`;
+      const player = card.querySelector('.player');
+
+      if(g.type==='scratch'){
+        player.innerHTML = `<iframe src="https://turbowarp.org/${g.payload.id}/embed?autostart=false&fps=60" allowfullscreen></iframe>`;
+      }
+      else if(g.type==='html'){
+        const blob = new Blob([g.payload.html],{type:'text/html'});
+        player.innerHTML = `<iframe src="${URL.createObjectURL(blob)}"></iframe>`;
+      }
+      else if(g.type==='python'){
+        player.innerHTML = `<p>Python file: ${g.payload.name}</p>`;
+        const d=document.createElement('a');
+        d.href=URL.createObjectURL(new Blob([g.payload.code],{type:'text/x-python'}));
+        d.download=g.payload.name;
+        d.textContent='Download Python File';
+        d.className='btn';
+        player.appendChild(d);
+      }
+
+      const del=document.createElement('button');
+      del.className='btn';
+      del.textContent='Delete';
+      del.onclick=()=>{library.splice(i,1);saveLibrary();renderLibrary();};
+      card.appendChild(del);
+
+      container.appendChild(card);
+    });
   }
 
-  if(t==='scratch'){
-    let val=document.getElementById('scratchid').value.trim();
-    if(!val){alert('Enter Scratch project id or URL');return;}
-    const m=val.match(/projects\/(\d+)/);
-    const pid=m?m[1]:val;
-    item.payload={kind:'turbowarp',data:pid};
+  async function fileToText(file){ return await file.text(); }
+
+  document.getElementById('addBtn').addEventListener('click', async ()=>{
+    const name = document.getElementById('gameName').value.trim();
+    const type = typeSel.value;
+    if(!name){ alert('Please enter a game name'); return; }
+
+    let payload = {};
+    if(type==='scratch'){
+      const id = document.getElementById('scratchID').value.trim();
+      if(!/^\d+$/.test(id)){ alert('Enter numeric Scratch Project ID'); return; }
+      payload = {id};
+    }
+    else if(type==='html'){
+      const file = document.getElementById('htmlfile').files[0];
+      if(!file){ alert('Upload an HTML file'); return; }
+      payload = {html: await fileToText(file)};
+    }
+    else if(type==='python'){
+      const file = document.getElementById('pyfile').files[0];
+      if(!file){ alert('Upload a Python file'); return; }
+      payload = {name:file.name, code: await fileToText(file)};
+    }
+
+    library.push({name,type,payload});
+    saveLibrary();
+    renderLibrary();
+    document.getElementById('gameName').value='';
+    document.getElementById('scratchID').value='';
+    document.getElementById('htmlfile').value='';
+    document.getElementById('pyfile').value='';
+  });
+
+  // ✅ Add default games if library is empty
+  if(library.length === 0){
+    library = [
+      { name:'99 Night', type:'scratch', payload:{id:'1212535196'} },
+      { name:'Grow a Garden', type:'scratch', payload:{id:'1195673692'} }
+    ];
+    saveLibrary();
   }
 
-  if(t==='python'){
-    const file=document.getElementById('pyfile').files[0];
-    const code=document.getElementById('pycode').value.trim();
-    if(file){item.payload={kind:'inline',data:await fileToDataURL(file)}}
-    else if(code){item.payload={kind:'code',data:code}}
-    else {alert('Provide a .py file or paste code');return;}
-  }
-
-  lib.unshift(item);saveLibrary(lib);renderGallery();
-  document.getElementById('name').value='';document.getElementById('desc').value='';document.getElementById('htmlfile').value='';document.getElementById('htmlurl').value='';document.getElementById('scratchid').value='';document.getElementById('pyfile').value='';document.getElementById('pycode').value='';document.getElementById('thumb').value='';
-});
-
-function loadToPlayer(g){
-  player.innerHTML='';
-  if(g.type==='html'){
-    if(g.payload.kind==='url'){const ifr=document.createElement('iframe');ifr.src=g.payload.data;player.appendChild(ifr);}
-    else if(g.payload.kind==='inline'){try{const arr=g.payload.data.split(',');const mime=arr[0].match(/:(.*?);/)[1];const bstr=atob(arr[1]);let n=bstr.length;const u8=new Uint8Array(n);while(n--) u8[n]=bstr.charCodeAt(n);const blob=new Blob([u8],{type:mime});const url=URL.createObjectURL(blob);const ifr=document.createElement('iframe');ifr.src=url;player.appendChild(ifr);}catch(e){player.innerHTML='<div class="muted">Unable to load HTML file.</div>'}}
-  }
-  if(g.type==='scratch'){
-    const pid=g.payload.data;
-    const ifr=document.createElement('iframe');
-    ifr.src='https://turbowarp.org/'+encodeURIComponent(pid)+'/embed?autostart=true';
-    player.appendChild(ifr);
-  }
-  if(g.type==='python'){
-    const container=document.createElement('div');container.style.display='flex';container.style.flexDirection='column';container.style.height='100%';
-    const toolbar=document.createElement('div');toolbar.style.display='flex';toolbar.style.gap='8px';toolbar.style.marginBottom='8px';
-    const runBtn=document.createElement('button');runBtn.textContent='Run';runBtn.className='btn';
-    const stopBtn=document.createElement('button');stopBtn.textContent='Clear';stopBtn.style.padding='8px';
-    toolbar.appendChild(runBtn);toolbar.appendChild(stopBtn);
-    const out=document.createElement('pre');out.style.flex='1';out.style.background='#02101a';out.style.padding='8px';out.style.borderRadius='8px';out.style.overflow='auto';out.style.color='#cbeef0';out.textContent='Python output...';
-    container.appendChild(toolbar);container.appendChild(out);player.appendChild(container);
-    let pyodide=null;
-    async function ensurePyodide(){if(window.pyodide) return window.pyodide;const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js';document.head.appendChild(s);await new Promise(r=>s.onload=r);window.pyodide=await loadPyodide();return window.pyodide}
-    runBtn.addEventListener('click',async ()=>{out.textContent='Loading Python runtime...';try{pyodide=await ensurePyodide();let code='';if(g.payload.kind==='inline'){const arr=g.payload.data.split(',');code=decodeURIComponent(escape(atob(arr[1])));} else if(g.payload.kind==='code') code=g.payload.data;await pyodide.runPythonAsync(`import sys\nclass Capt:\n    def __init__(self): self.buf=[]\n    def write(self,s): self.buf.append(s)\n    def flush(self): pass\ncap=Capt()\nsys.stdout=cap\nsys.stderr=cap\n`);try{await pyodide.runPythonAsync(code);const res=pyodide.runPython('"".join(cap.buf)');out.textContent=res||'\n<no output>'}catch(pyErr){out.textContent='Error:\n'+String(pyErr)}}catch(e){out.textContent='Failed loading Pyodide: '+e}});
-    stopBtn.addEventListener('click',()=>{out.textContent='';});
-  }
-}
-
-clearBtn.addEventListener('click',()=>{if(confirm('Clear local library?')){localStorage.removeItem('gamehub_lib');renderGallery();}});
-refreshBtn.addEventListener('click',renderGallery);
-
-showSections();renderGallery();
-
-document.body.addEventListener('dragover',e=>e.preventDefault());
-document.body.addEventListener('drop',async e=>{e.preventDefault();const f=e.dataTransfer.files[0];if(!f) return;if(f.type==='text/html'){document.getElementById('htmlfile').files=e.dataTransfer.files;alert('HTML file attached — click Add to library.');}});
+  renderLibrary();
 </script>
 </body>
 </html>
